@@ -335,7 +335,7 @@ const ProductList = () => {
                 <option value="created_at">Oldest First</option>
                 <option value="price">Price: Low to High</option>
                 <option value="-price">Price: High to Low</option>
-                <option value="-view_count">Most Viewed</option>
+                <option value="-product_view_count">Most Viewed</option>
               </select>
 
               <span className="text-gray-600">{products.length} products</span>

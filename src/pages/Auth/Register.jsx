@@ -11,28 +11,32 @@ import {
   AlertCircle,
   CheckCircle,
   Phone,
+  ChevronDown,
+  ChevronUp,
+  MapPin,
 } from "lucide-react";
 import axios from "axios";
 
 const Register = () => {
   const { login } = useContext(AuthContext);
-const [formData, setFormData] = useState({
-  username: "",
-  email: "",
-  password: "",
-  confirmPassword: "",
-  full_name: "",
-  phone: "",
-  address_line1: "",
-  address_line2: "",
-  city: "",
-  state: "",
-  country: "",
-  pin_code: "",
-});
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    full_name: "",
+    phone: "",
+    address_line1: "",
+    address_line2: "",
+    city: "",
+    state: "",
+    country: "",
+    pin_code: "",
+  });
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showAddressFields, setShowAddressFields] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
@@ -49,7 +53,7 @@ const [formData, setFormData] = useState({
 
   const validateForm = () => {
     if (!formData.username || !formData.email || !formData.password) {
-      setError("All fields are required");
+      setError("Username, email, and password are required");
       return false;
     }
 
@@ -87,20 +91,19 @@ const [formData, setFormData] = useState({
     setError("");
 
     try {
-const registerPayload = {
-  username: formData.username,
-  email: formData.email,
-  password: formData.password,
-  full_name: formData.full_name,
-  phone: formData.phone,
-  address_line1: formData.address_line1,
-  address_line2: formData.address_line2,
-  city: formData.city,
-  state: formData.state,
-  country: formData.country,
-  pin_code: formData.pin_code,
-};
-
+      const registerPayload = {
+        username: formData.username,
+        email: formData.email,
+        password: formData.password,
+        full_name: formData.full_name,
+        phone: formData.phone,
+        address_line1: formData.address_line1,
+        address_line2: formData.address_line2,
+        city: formData.city,
+        state: formData.state,
+        country: formData.country,
+        pin_code: formData.pin_code,
+      };
 
       await axios.post("/auth/register/", registerPayload);
 
@@ -192,14 +195,16 @@ const registerPayload = {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Essential Fields */}
+
             {/* Username Field */}
             <div>
               <label
                 htmlFor="username"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Username
+                Username *
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -224,7 +229,7 @@ const registerPayload = {
                 htmlFor="email"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Email Address
+                Email Address *
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -243,170 +248,13 @@ const registerPayload = {
               </div>
             </div>
 
-            {/* Full Name */}
-            <div>
-              <label
-                htmlFor="full_name"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Full Name
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                <input
-                  id="full_name"
-                  name="full_name"
-                  type="text"
-                  value={formData.full_name}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your full name"
-                />
-              </div>
-            </div>
-
-            {/* Phone */}
-            <div>
-              <label
-                htmlFor="phone"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Phone Number
-              </label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                <input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter your phone number"
-                />
-              </div>
-            </div>
-
-            {/* Address */}
-            <div>
-              <label
-                htmlFor="address_line1"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Address Line 1
-              </label>
-              <input
-                id="address_line1"
-                name="address_line1"
-                type="text"
-                value={formData.address_line1}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter address line 1"
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="address_line2"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                Address Line 2
-              </label>
-              <input
-                id="address_line2"
-                name="address_line2"
-                type="text"
-                value={formData.address_line2}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="Enter address line 2"
-              />
-            </div>
-
-            {/* City / State */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="city"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  City
-                </label>
-                <input
-                  id="city"
-                  name="city"
-                  type="text"
-                  value={formData.city}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter city"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="state"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  State
-                </label>
-                <input
-                  id="state"
-                  name="state"
-                  type="text"
-                  value={formData.state}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter state"
-                />
-              </div>
-            </div>
-
-            {/* Country / Pin Code */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label
-                  htmlFor="country"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  Country
-                </label>
-                <input
-                  id="country"
-                  name="country"
-                  type="text"
-                  value={formData.country}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter country"
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="pin_code"
-                  className="block text-sm font-medium text-gray-700 mb-2"
-                >
-                  PIN Code
-                </label>
-                <input
-                  id="pin_code"
-                  name="pin_code"
-                  type="text"
-                  value={formData.pin_code}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="Enter PIN code"
-                />
-              </div>
-            </div>
-
             {/* Password Field */}
             <div>
               <label
                 htmlFor="password"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Password
+                Password *
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -442,7 +290,7 @@ const registerPayload = {
                 htmlFor="confirmPassword"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
-                Confirm Password
+                Confirm Password *
               </label>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -472,28 +320,197 @@ const registerPayload = {
               </div>
             </div>
 
+            {/* Optional Fields Section */}
+            <div className="border-t border-gray-200 pt-5">
+              <button
+                type="button"
+                onClick={() => setShowAddressFields(!showAddressFields)}
+                className="w-full flex items-center justify-between p-3 text-left bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5 text-gray-500" />
+                  <span className="text-sm font-medium text-gray-700">
+                    Add Profile Details (Optional)
+                  </span>
+                </div>
+                {showAddressFields ? (
+                  <ChevronUp className="w-5 h-5 text-gray-500" />
+                ) : (
+                  <ChevronDown className="w-5 h-5 text-gray-500" />
+                )}
+              </button>
+
+              {showAddressFields && (
+                <div className="mt-4 space-y-4 bg-gray-50 p-4 rounded-lg">
+                  {/* Full Name */}
+                  <div>
+                    <label
+                      htmlFor="full_name"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                      <input
+                        id="full_name"
+                        name="full_name"
+                        type="text"
+                        value={formData.full_name}
+                        onChange={handleChange}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter your full name"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Phone */}
+                  <div>
+                    <label
+                      htmlFor="phone"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Phone Number
+                    </label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                      <input
+                        id="phone"
+                        name="phone"
+                        type="tel"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Enter your phone number"
+                      />
+                    </div>
+                  </div>
+
+                  {/* City / State in one row */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label
+                        htmlFor="city"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        City
+                      </label>
+                      <input
+                        id="city"
+                        name="city"
+                        type="text"
+                        value={formData.city}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        placeholder="City"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="state"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        State
+                      </label>
+                      <input
+                        id="state"
+                        name="state"
+                        type="text"
+                        value={formData.state}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        placeholder="State"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Address */}
+                  <div>
+                    <label
+                      htmlFor="address_line1"
+                      className="block text-sm font-medium text-gray-700 mb-2"
+                    >
+                      Address
+                    </label>
+                    <input
+                      id="address_line1"
+                      name="address_line1"
+                      type="text"
+                      value={formData.address_line1}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                      placeholder="Street address"
+                    />
+                  </div>
+
+                  {/* Country / Pin Code */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label
+                        htmlFor="country"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        Country
+                      </label>
+                      <input
+                        id="country"
+                        name="country"
+                        type="text"
+                        value={formData.country}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        placeholder="Country"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="pin_code"
+                        className="block text-sm font-medium text-gray-700 mb-2"
+                      >
+                        PIN Code
+                      </label>
+                      <input
+                        id="pin_code"
+                        name="pin_code"
+                        type="text"
+                        value={formData.pin_code}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                        placeholder="PIN"
+                      />
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-gray-500 mt-2">
+                    You can skip these details and add them later in your
+                    profile
+                  </p>
+                </div>
+              )}
+            </div>
+
             {/* Password Requirements */}
-            <div className="text-sm text-gray-500 space-y-1">
-              <p>Password requirements:</p>
-              <ul className="list-disc list-inside space-y-1 ml-2">
-                <li
-                  className={
-                    formData.password.length >= 5 ? "text-green-600" : ""
-                  }
-                >
-                  At least 5 characters
-                </li>
-                <li
-                  className={
-                    formData.password === formData.confirmPassword &&
-                    formData.confirmPassword
-                      ? "text-green-600"
-                      : ""
-                  }
-                >
-                  Passwords match
-                </li>
-              </ul>
+            <div className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg">
+              <div className="flex items-center justify-between">
+                <span>Password requirements:</span>
+                <div className="flex gap-2">
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      formData.password.length >= 5
+                        ? "bg-green-500"
+                        : "bg-gray-300"
+                    }`}
+                  ></div>
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      formData.password === formData.confirmPassword &&
+                      formData.confirmPassword
+                        ? "bg-green-500"
+                        : "bg-gray-300"
+                    }`}
+                  ></div>
+                </div>
+              </div>
             </div>
 
             {/* Submit Button */}
@@ -532,11 +549,11 @@ const registerPayload = {
         </div>
 
         {/* Additional Info */}
-        <div className="text-center mt-8">
+        <div className="text-center mt-6">
           <p className="text-sm text-gray-500">
             By creating an account, you agree to our{" "}
             <Link to="/terms" className="text-blue-600 hover:text-blue-700">
-              Terms of Service
+              Terms
             </Link>{" "}
             and{" "}
             <Link to="/privacy" className="text-blue-600 hover:text-blue-700">

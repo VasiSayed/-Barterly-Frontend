@@ -12,6 +12,7 @@ import Sell from "./pages/Sell/Sell";
 import MyProducts from "./pages/MyProducts/MyProducts";
 
 // Page Components
+import EditProduct from "../src/pages/MyProducts/EditProduct";
 import Login from "./pages/Auth/Login";
 import ProductList from "./pages/Products/ProductList";
 import ProductDetail from "./pages/Products/ProductDetail";
@@ -48,6 +49,8 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            <Route path="/products/:id/edit" element={<EditProduct />} />
 
             <Route
               path="/sell"

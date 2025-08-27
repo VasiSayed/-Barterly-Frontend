@@ -15,8 +15,54 @@ import {
   RefreshCw,
   ShoppingCart,
   Store,
+  ChevronDown,
+  ChevronUp,
+  Flag,
+  X,
 } from "lucide-react";
 import axios from "axios";
+
+// Toast Notification Component
+const Toast = ({ message, type = "error", onClose }) => {
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      onClose();
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [onClose]);
+
+  const bgColor = {
+    success: "bg-green-500",
+    error: "bg-red-500",
+    warning: "bg-yellow-500",
+    info: "bg-blue-500",
+  }[type];
+
+  const icon = {
+    success: <CheckCircle className="w-5 h-5" />,
+    error: <XCircle className="w-5 h-5" />,
+    warning: <AlertCircle className="w-5 h-5" />,
+    info: <AlertCircle className="w-5 h-5" />,
+  }[type];
+
+  return (
+    <div className="fixed top-4 right-4 z-50 animate-in slide-in-from-right-full">
+      <div
+        className={`${bgColor} text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3 max-w-md`}
+      >
+        {icon}
+        <span className="flex-1">{message}</span>
+        <button
+          onClick={onClose}
+          className="text-white hover:text-gray-200 transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
+    </div>
+  );
+};
 
 const Negotiations = () => {
   const [negotiations, setNegotiations] = useState([]);
@@ -26,6 +72,15 @@ const Negotiations = () => {
   const [activeTab, setActiveTab] = useState("buying"); // buying or selling
   const [buyingCount, setBuyingCount] = useState(0);
   const [sellingCount, setSellingCount] = useState(0);
+  const [toast, setToast] = useState(null);
+
+  const showToast = (message, type = "error") => {
+    setToast({ message, type });
+  };
+
+  const hideToast = () => {
+    setToast(null);
+  };
 
   useEffect(() => {
     loadNegotiations();
@@ -45,13 +100,11 @@ const Negotiations = () => {
       // Handle the counts from API response
       if (activeTab === "buying") {
         setBuyingCount(data.results?.length || data.length || 0);
-        // If selling_count is provided in buying response
         if (data.selling_count !== undefined) {
           setSellingCount(data.selling_count);
         }
       } else {
         setSellingCount(data.results?.length || data.length || 0);
-        // If buying_count is provided in selling response
         if (data.buying_count !== undefined) {
           setBuyingCount(data.buying_count);
         }
@@ -72,68 +125,49 @@ const Negotiations = () => {
   const handleAccept = async (negotiationId) => {
     try {
       await axios.post(`/negotiations/${negotiationId}/accept/`);
+      showToast("Offer accepted successfully!", "success");
       loadNegotiations();
     } catch (error) {
       console.error("Failed to accept offer:", error);
-      alert("Failed to accept offer. Please try again.");
+      showToast("Failed to accept offer. Please try again.", "error");
     }
   };
 
   const handleReject = async (negotiationId) => {
     try {
       await axios.post(`/negotiations/${negotiationId}/reject/`);
+      showToast("Offer rejected", "info");
       loadNegotiations();
     } catch (error) {
       console.error("Failed to reject offer:", error);
-      alert("Failed to reject offer. Please try again.");
+      showToast("Failed to reject offer. Please try again.", "error");
     }
   };
 
   const handleCancel = async (negotiationId) => {
     try {
       await axios.post(`/negotiations/${negotiationId}/cancel/`);
+      showToast("Negotiation cancelled", "info");
       loadNegotiations();
     } catch (error) {
       console.error("Failed to cancel negotiation:", error);
-      alert("Failed to cancel negotiation. Please try again.");
+      showToast("Failed to cancel negotiation. Please try again.", "error");
     }
   };
 
   const handleCounterOffer = async (negotiationId, price, message) => {
     try {
-      // All counter offers on existing negotiations use the /offer/ endpoint
-      // regardless of whether user is buying or selling
       const endpoint = `/negotiations/${negotiationId}/offer/`;
-
       await axios.post(endpoint, {
         price: parseFloat(price),
         message: message,
       });
+      showToast("Counter offer sent successfully!", "success");
       loadNegotiations();
     } catch (error) {
       console.error("Failed to make counter offer:", error);
-      alert("Failed to make counter offer. Please try again.");
+      showToast("Failed to make counter offer. Please try again.", "error");
     }
-  };
-
-  const getStatusIcon = (status) => {
-    const icons = {
-      open: <Clock className="w-5 h-5 text-blue-600" />,
-      accepted: <CheckCircle className="w-5 h-5 text-green-600" />,
-      rejected: <XCircle className="w-5 h-5 text-red-600" />,
-      canceled: <AlertCircle className="w-5 h-5 text-gray-600" />,
-    };
-    return icons[status] || icons.open;
-  };
-
-  const getStatusColor = (status) => {
-    const colors = {
-      open: "bg-blue-100 text-blue-800 border-blue-200",
-      accepted: "bg-green-100 text-green-800 border-green-200",
-      rejected: "bg-red-100 text-red-800 border-red-200",
-      canceled: "bg-gray-100 text-gray-800 border-gray-200",
-    };
-    return colors[status] || colors.open;
   };
 
   const filteredNegotiations = negotiations.filter(
@@ -161,6 +195,11 @@ const Negotiations = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
+      {/* Toast Notification */}
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={hideToast} />
+      )}
+
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
@@ -168,7 +207,7 @@ const Negotiations = () => {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">Negotiations</h1>
               <p className="text-gray-600 mt-2">
-                Manage your product negotiations
+                Manage your product negotiations and messages
               </p>
             </div>
             <button
@@ -303,6 +342,7 @@ const Negotiations = () => {
                 onCancel={handleCancel}
                 onCounterOffer={handleCounterOffer}
                 userType={activeTab}
+                showToast={showToast}
               />
             ))}
           </div>
@@ -320,13 +360,20 @@ const NegotiationCard = ({
   onCancel,
   onCounterOffer,
   userType,
+  showToast,
 }) => {
   const [showCounterOffer, setShowCounterOffer] = useState(false);
+  const [showMessages, setShowMessages] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
   const [counterOfferData, setCounterOfferData] = useState({
     price: "",
     message: "",
   });
   const [loading, setLoading] = useState(false);
+  const [sendingMessage, setSendingMessage] = useState(false);
+  const [loadingMessages, setLoadingMessages] = useState(false);
+  const [reportingMessage, setReportingMessage] = useState(null);
 
   const getStatusIcon = (status) => {
     const icons = {
@@ -346,6 +393,102 @@ const NegotiationCard = ({
       canceled: "bg-gray-100 text-gray-800 border-gray-200",
     };
     return colors[status] || colors.open;
+  };
+
+  // Load messages when chat is opened
+  const loadMessages = async () => {
+    if (loadingMessages) return;
+
+    setLoadingMessages(true);
+    try {
+      const response = await axios.get(
+        `/negotiations/${negotiation.id}/messages/`
+      );
+      setMessages(response.data.results || response.data || []);
+    } catch (error) {
+      console.error("Failed to load messages:", error);
+    } finally {
+      setLoadingMessages(false);
+    }
+  };
+
+  // Send a new message
+  const sendMessage = async (e) => {
+    e.preventDefault();
+    if (!newMessage.trim()) return;
+
+    setSendingMessage(true);
+    try {
+      const response = await axios.post(
+        `/negotiations/${negotiation.id}/send_message/`,
+        {
+          message: newMessage.trim(),
+        }
+      );
+
+      setNewMessage("");
+      // Add the new message directly to avoid waiting for refresh
+      setMessages((prev) => [...prev, response.data]);
+      showToast("Message sent successfully!", "success");
+    } catch (error) {
+      console.error("Failed to send message:", error);
+      if (error.response?.data?.detail?.includes("blocked")) {
+        showToast(
+          `You are temporarily blocked from sending messages: ${error.response.data.detail}`,
+          "warning"
+        );
+      } else {
+        showToast("Failed to send message. Please try again.", "error");
+      }
+    } finally {
+      setSendingMessage(false);
+    }
+  };
+
+  // Report a message
+  const reportMessage = async (messageId, reason = "Inappropriate content") => {
+    if (reportingMessage === messageId) return;
+
+    setReportingMessage(messageId);
+    try {
+      await axios.post(`/negotiations/${negotiation.id}/report-message/`, {
+        message_id: messageId,
+        reason: reason,
+      });
+      showToast(
+        "Message reported successfully. Thank you for helping keep our platform safe.",
+        "success"
+      );
+    } catch (error) {
+      console.error("Failed to report message:", error);
+      if (error.response?.data?.detail === "Already reported") {
+        showToast("You have already reported this message.", "info");
+      } else {
+        showToast("Failed to report message. Please try again.", "error");
+      }
+    } finally {
+      setReportingMessage(null);
+    }
+  };
+
+  // Auto-refresh messages every 5 seconds when chat is open
+  useEffect(() => {
+    let interval;
+    if (showMessages) {
+      loadMessages(); // Initial load
+      interval = setInterval(loadMessages, 5000); // Refresh every 5 seconds
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [showMessages, negotiation.id]);
+
+  const toggleMessages = () => {
+    setShowMessages(!showMessages);
+    if (!showMessages) {
+      loadMessages();
+    }
   };
 
   const handleSubmitCounterOffer = async (e) => {
@@ -368,6 +511,8 @@ const NegotiationCard = ({
 
   const otherUser =
     userType === "buying" ? negotiation.seller : negotiation.buyer;
+  const currentUser =
+    userType === "buying" ? negotiation.buyer : negotiation.seller;
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -409,7 +554,7 @@ const NegotiationCard = ({
           </div>
 
           <Link
-            to={`/products/${negotiation.product}`}
+            to={`/products/${negotiation.product?.id || negotiation.product}`}
             className="text-blue-600 hover:text-blue-700 text-sm font-medium"
           >
             View Product →
@@ -434,7 +579,7 @@ const NegotiationCard = ({
                 }`}
               >
                 <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                  <User className="w-4 h-4 text-white" />
+                  <DollarSign className="w-4 h-4 text-white" />
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1">
@@ -459,6 +604,137 @@ const NegotiationCard = ({
           </div>
         </div>
       )}
+
+      {/* Messages Section */}
+      <div className="border-b border-gray-200">
+        <button
+          onClick={toggleMessages}
+          className="w-full flex items-center justify-between p-6 text-left hover:bg-gray-50 transition-colors"
+        >
+          <div className="flex items-center gap-3">
+            <MessageCircle className="w-5 h-5 text-blue-600" />
+            <span className="font-medium text-gray-900">Messages</span>
+            {messages.length > 0 && (
+              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs">
+                {messages.length}
+              </span>
+            )}
+          </div>
+          {showMessages ? (
+            <ChevronUp className="w-5 h-5 text-gray-400" />
+          ) : (
+            <ChevronDown className="w-5 h-5 text-gray-400" />
+          )}
+        </button>
+
+        {showMessages && (
+          <div className="border-t border-gray-200 bg-gray-50">
+            {/* Messages List */}
+            <div className="max-h-80 overflow-y-auto p-4 space-y-3">
+              {loadingMessages ? (
+                <div className="text-center py-4">
+                  <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto"></div>
+                </div>
+              ) : messages.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  <MessageCircle className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                  <p className="text-sm">No messages yet</p>
+                  <p className="text-xs">Start a conversation below</p>
+                </div>
+              ) : (
+                messages.map((message) => {
+                  const isMyMessage =
+                    message.sender?.username === currentUser?.username;
+                  return (
+                    <div
+                      key={message.id}
+                      className={`flex ${
+                        isMyMessage ? "justify-end" : "justify-start"
+                      }`}
+                    >
+                      <div
+                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg relative group ${
+                          isMyMessage
+                            ? "bg-blue-600 text-white"
+                            : "bg-white text-gray-900 border border-gray-200"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-medium">
+                            {message.sender?.username ||
+                              message.sender?.full_name ||
+                              "User"}
+                          </span>
+                          <span
+                            className={`text-xs ${
+                              isMyMessage ? "text-blue-100" : "text-gray-500"
+                            }`}
+                          >
+                            {new Date(message.created_at).toLocaleTimeString(
+                              [],
+                              {
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              }
+                            )}
+                          </span>
+                        </div>
+                        <p className="text-sm">{message.message}</p>
+
+                        {/* Report Button - only show for other user's messages */}
+                        {!isMyMessage && (
+                          <button
+                            onClick={() => reportMessage(message.id)}
+                            disabled={reportingMessage === message.id}
+                            className={`absolute -top-2 -right-2 p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity ${
+                              reportingMessage === message.id
+                                ? "bg-gray-400"
+                                : "bg-red-500 hover:bg-red-600"
+                            } text-white text-xs`}
+                            title="Report message"
+                          >
+                            {reportingMessage === message.id ? (
+                              <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                              <Flag className="w-3 h-3" />
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
+            {/* Message Input */}
+            <div className="p-4 border-t border-gray-200 bg-white">
+              <form onSubmit={sendMessage} className="flex gap-3">
+                <input
+                  type="text"
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  placeholder="Type your message..."
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  disabled={sendingMessage}
+                />
+                <button
+                  type="submit"
+                  disabled={sendingMessage || !newMessage.trim()}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+                >
+                  {sendingMessage ? (
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}
+                  {!sendingMessage && "Send"}
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Actions */}
       {negotiation.status === "open" && (
@@ -501,8 +777,7 @@ const NegotiationCard = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {userType === "buying" ? "Counter Offer" : "Counter Offer"}{" "}
-                    (₹)
+                    Counter Offer (₹)
                   </label>
                   <input
                     type="number"
