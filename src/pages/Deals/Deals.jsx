@@ -412,7 +412,7 @@ const DealCard = ({ deal, userType, onStatusUpdate }) => {
           </div>
 
           <Link
-            to={`/products/${deal.product?.id}`}
+            to={`/products/${deal.product}`}
             className="text-blue-600 hover:text-blue-700 text-sm font-medium flex items-center gap-1"
           >
             View Product
